@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+  title: My Health Chain API
+  description: National digital health record system for Kenya
+  version: 0.1.0
+  contact:
+    name: My Health Chain
+servers:
+  - url: http://localhost:4000/api
+    description: Local development
+
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+
+  /patients:
+    post:
+      summary: Create a new patient
+      tags: [Patients]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                national_id:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                dob:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Patient created
+        '401':
+          description: Unauthorized
+
+  /patients/lookup/{nationalId}:
+    get:
+      summary: Lookup patient by national ID
+      tags: [Patients]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: nationalId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Patient found
+        '404':
+          description: Patient not found
+
+  /records/add:
+    post:
+      summary: Add a medical record (visit, diagnosis, etc.)
+      tags: [Records]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: string
+                record_type:
+                  type: string
+                  enum: [visit, diagnosis, medication, lab_result]
+                data:
+                  type: object
+      responses:
+        '201':
+          description: Record added
+        '401':
+          description: Unauthorized
+
+  /labs/upload:
+    post:
+      summary: Upload lab results
+      tags: [Labs]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Lab results uploaded
+
+  /emergency/lookup:
+    get:
+      summary: Emergency patient lookup (limited view)
+      tags: [Emergency]
+      parameters:
+        - in: query
+          name: patient_id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Emergency patient info
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Patients
+    description: Patient management
+  - name: Records
+    description: Medical records
+  - name: Labs
+    description: Lab results
+  - name: Emergency
+    description: Emergency access

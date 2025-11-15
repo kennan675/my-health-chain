@@ -1,0 +1,57 @@
+# Default values for my-health-chain Helm chart
+
+backend:
+  image:
+    repository: myhealthchain/backend
+    tag: latest
+    pullPolicy: Always
+  replicas: 3
+  port: 4000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+postgres:
+  image:
+    repository: postgres
+    tag: "15"
+  replicas: 1
+  port: 5432
+  storage: 10Gi
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+redis:
+  image:
+    repository: redis
+    tag: "7"
+  replicas: 1
+  port: 6379
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+
+secrets:
+  # Set these before deploying!
+  database_url: "postgresql://postgres:password@mhc-postgres:5432/mhc"
+  jwt_secret: "change-me-in-production"
+  aes_master_key: "your-base64-encoded-32-byte-aes-key"
+
+ingress:
+  enabled: false
+  className: nginx
+  host: myhealthchain.example.com
+  tls: true

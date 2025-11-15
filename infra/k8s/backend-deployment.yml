@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mhc-backend
+  labels:
+    app: mhc-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mhc-backend
+  template:
+    metadata:
+      labels:
+        app: mhc-backend
+    spec:
+      containers:
+      - name: backend
+        image: myhealthchain/backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+        env:
+        - name: PORT
+          value: "4000"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mhc-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mhc-config
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mhc-secrets
+              key: jwt-secret
+        - name: AES_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mhc-secrets
+              key: aes-master-key
+        - name: NODE_ENV
+          value: production
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mhc-backend-svc
+  labels:
+    app: mhc-backend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 4000
+  selector:
+    app: mhc-backend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mhc-config
+data:
+  redis-url: "redis://mhc-redis:6379"

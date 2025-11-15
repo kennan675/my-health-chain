@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mhc-postgres
+spec:
+  serviceName: mhc-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mhc-postgres
+  template:
+    metadata:
+      labels:
+        app: mhc-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mhc-secrets
+              key: postgres-password
+        - name: POSTGRES_DB
+          value: mhc
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+  volumeClaimTemplates:
+  - metadata:
+      name: pgdata
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mhc-postgres
+spec:
+  clusterIP: None
+  ports:
+  - port: 5432
+  selector:
+    app: mhc-postgres

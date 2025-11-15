@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mhc-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mhc-redis
+  template:
+    metadata:
+      labels:
+        app: mhc-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mhc-redis
+spec:
+  ports:
+  - port: 6379
+  selector:
+    app: mhc-redis

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: my-health-chain
+description: National digital health record system for Kenya
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - healthcare
+  - health-records
+  - emr
+  - kenya
+home: https://github.com/yourusername/my-health-chain
+sources:
+  - https://github.com/yourusername/my-health-chain
+maintainers:
+  - name: My Health Chain Team
+    email: team@myhealthchain.ke
