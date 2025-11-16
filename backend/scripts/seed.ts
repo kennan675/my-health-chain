@@ -17,9 +17,12 @@ async function seed() {
     // hospital
     await client.query("INSERT INTO hospitals (name, county, address) VALUES ('Nairobi General Hospital', 'Nairobi', '123 Nairobi Road') ON CONFLICT DO NOTHING");
 
-    // admin user
-    const pw = await bcrypt.hash('adminpassword', 10);
-    await client.query("INSERT INTO users (id, username, password_hash, role_id) SELECT gen_random_uuid(), 'admin', $1, r.id FROM roles r WHERE r.name='Super Admin' ON CONFLICT DO NOTHING", [pw]);
+    // admin user (username: admin, password: admin)
+    const pw = await bcrypt.hash('admin', 10);
+    await client.query(
+      "INSERT INTO users (id, username, password_hash, role_id) SELECT gen_random_uuid(), 'admin', $1, r.id FROM roles r WHERE r.name='Super Admin' ON CONFLICT DO NOTHING",
+      [pw],
+    );
 
     await client.query('COMMIT');
     console.log('Seed complete');
